@@ -1,0 +1,32 @@
+# ============================================================
+# Local developer configuration template
+# ============================================================
+# 1. Copy this file to application-local.yaml (same directory)
+# 2. Fill in real values
+# 3. application-local.yaml is gitignored — never commit it
+# 4. Activate: SPRING_PROFILES_ACTIVE=local
+#              or -Dspring.profiles.active=local in IDE
+# ============================================================
+
+spring:
+  datasource:
+    url: jdbc:postgresql://<host>/<dbname>?sslmode=require
+    username: <username>
+    password: <password>
+
+  data:
+    redis:
+      url: rediss://<host>:<port>
+
+  # Mail is optional. Only include if mail features are needed locally.
+  # mail:
+  #   host: localhost
+  #   port: 1025
+  #   username: ""
+  #   password: ""
+  #   properties:
+  #     mail:
+  #       smtp:
+  #         auth: false
+  #         starttls:
+  #           enable: false
