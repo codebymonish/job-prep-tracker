@@ -63,4 +63,13 @@ public class ProblemDetailConfig {
         problemDetail.setProperty("correlationId", MDC.get("correlationId"));
         return problemDetail;
     }
+
+    @ExceptionHandler(com.jobtracker.auth.exception.DuplicateEmailException.class)
+    public ProblemDetail handleDuplicateEmailException(com.jobtracker.auth.exception.DuplicateEmailException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setType(URI.create(errorBaseUrl + "/email-exists"));
+        problemDetail.setTitle("Duplicate Email");
+        problemDetail.setProperty("correlationId", MDC.get("correlationId"));
+        return problemDetail;
+    }
 }

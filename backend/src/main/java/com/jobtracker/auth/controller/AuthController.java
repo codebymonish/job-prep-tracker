@@ -50,7 +50,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(
-            @CookieValue(name = "refresh_token", required = false) String rawRefreshToken,
+            @CookieValue(name = "refreshToken", required = false) String rawRefreshToken,
             HttpServletRequest request) {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -68,12 +68,12 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-            @CookieValue(name = "refresh_token", required = false) String rawRefreshToken) {
+            @CookieValue(name = "refreshToken", required = false) String rawRefreshToken) {
         if (rawRefreshToken != null && !rawRefreshToken.isBlank()) {
             authService.logout(rawRefreshToken);
         }
         
-        ResponseCookie clearCookie = ResponseCookie.from("refresh_token", "")
+        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(cookieProperties.secure())
                 .path(cookieProperties.path())
@@ -99,7 +99,7 @@ public class AuthController {
     }
 
     private ResponseCookie buildCookie(String token, long maxAgeSeconds) {
-        return ResponseCookie.from("refresh_token", token)
+        return ResponseCookie.from("refreshToken", token)
                 .httpOnly(true)
                 .secure(cookieProperties.secure())
                 .path(cookieProperties.path())

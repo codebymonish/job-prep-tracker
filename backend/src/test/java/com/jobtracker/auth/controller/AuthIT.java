@@ -93,7 +93,7 @@ public class AuthIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Cookie refreshTokenCookie = loginResult.getResponse().getCookie("refresh_token");
+        Cookie refreshTokenCookie = loginResult.getResponse().getCookie("refreshToken");
         assertNotNull(refreshTokenCookie);
 
         // 3. Refresh
@@ -102,7 +102,7 @@ public class AuthIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Cookie newRefreshTokenCookie = refreshResult.getResponse().getCookie("refresh_token");
+        Cookie newRefreshTokenCookie = refreshResult.getResponse().getCookie("refreshToken");
         assertNotNull(newRefreshTokenCookie);
         assertNotEquals(refreshTokenCookie.getValue(), newRefreshTokenCookie.getValue());
 

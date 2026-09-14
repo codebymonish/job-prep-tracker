@@ -79,7 +79,7 @@ public class RefreshTokenRotationIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Cookie refreshTokenCookie = loginResult.getResponse().getCookie("refresh_token");
+        Cookie refreshTokenCookie = loginResult.getResponse().getCookie("refreshToken");
         assertNotNull(refreshTokenCookie);
 
         // Use CyclicBarrier to ensure both threads fire refresh simultaneously
@@ -108,8 +108,8 @@ public class RefreshTokenRotationIT {
         assertEquals(200, result2.getResponse().getStatus());
 
         // 2. Assert both receive byte-identical R2 cookies
-        String r2_1 = result1.getResponse().getCookie("refresh_token").getValue();
-        String r2_2 = result2.getResponse().getCookie("refresh_token").getValue();
+        String r2_1 = result1.getResponse().getCookie("refreshToken").getValue();
+        String r2_2 = result2.getResponse().getCookie("refreshToken").getValue();
         assertEquals(r2_1, r2_2, "Both concurrent callers must receive the exact same R2 refresh token");
 
         // 3. Assert both receive byte-identical J2 JSON payloads
@@ -117,7 +117,7 @@ public class RefreshTokenRotationIT {
         String body2 = result2.getResponse().getContentAsString();
         assertEquals(body1, body2, "Both concurrent callers must receive the exact same J2 response payload");
 
-        // 4. Assert exactly 2 refresh_tokens rows exist for the family (the old revoked one, and the new R2)
+        // 4. Assert exactly 2 refreshTokens rows exist for the family (the old revoked one, and the new R2)
         assertEquals(2, refreshTokenRepository.count(), "There should be exactly 2 rows in the token family");
 
         executor.shutdown();

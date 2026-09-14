@@ -91,7 +91,7 @@ public class LogoutRefreshRaceIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Cookie refreshTokenCookie = loginResult.getResponse().getCookie("refresh_token");
+        Cookie refreshTokenCookie = loginResult.getResponse().getCookie("refreshToken");
         assertTrue(refreshTokenCookie != null && !refreshTokenCookie.getValue().isBlank());
 
         // Inject a 500ms sleep into revokeFamily to GUARANTEE logout holds the DB lock

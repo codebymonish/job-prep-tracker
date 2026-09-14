@@ -64,7 +64,7 @@ public class AuthService {
         String emailNormalized = req.email().trim().toLowerCase();
         
         if (userRepository.findByEmailNormalized(emailNormalized).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new com.jobtracker.auth.exception.DuplicateEmailException("Email already exists");
         }
 
         User user = new User();
