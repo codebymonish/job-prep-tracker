@@ -29,3 +29,7 @@ application-local.yml
 # Local tooling
 *.swp
 *.swo
+
+# Local IDE frontend workspace artifacts
+/backend/frontend-link/
+/backend/frontend-patch/
