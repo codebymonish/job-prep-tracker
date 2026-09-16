@@ -1,0 +1,17 @@
+app:
+  auth:
+    rate-limit:
+      login-window-seconds: 5
+      password-reset-window-seconds: 5
+  jwt:
+    expiry-seconds: 900
+  cookie:
+    secure: false
+    same-site: lax
+    path: /
+    max-age-seconds: 604800
+
+spring:
+  data:
+    redis:
+      url: redis://localhost:6379

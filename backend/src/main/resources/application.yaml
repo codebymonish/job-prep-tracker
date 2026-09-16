@@ -2,6 +2,15 @@ spring:
   application:
     name: job-tracker
 
+app:
+  jwt:
+    expiry-seconds: 900
+  cookie:
+    secure: true
+    same-site: lax
+    path: /
+    max-age-seconds: 604800
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
