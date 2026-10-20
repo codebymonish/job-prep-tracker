@@ -2,9 +2,10 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { environment } from '../environments/environment';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/applications', pathMatch: 'full' },
+  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   {
     path: 'auth',
     canActivate: [guestGuard],
@@ -32,14 +33,25 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+  {
     path: 'applications',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/applications/applications.component').then(m => m.ApplicationsComponent)
+    loadChildren: () => import('./features/applications/applications.routes')
+      .then(m => m.APPLICATION_ROUTES)
   },
   {
     path: 'admin',
     canActivate: [adminGuard],
     loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent)
   },
-  { path: '**', redirectTo: '/applications' }
+  ...(environment.production ? [] : [{
+    path: 'e2e/auth-test-harness',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/e2e-support/auth-test-harness.component').then(m => m.AuthTestHarnessComponent)
+  }]),
+  { path: '**', redirectTo: '/dashboard' }
 ];
