@@ -1,32 +1,64 @@
 # ============================================================
 # Local developer configuration template
-# ============================================================
 # 1. Copy this file to application-local.yaml (same directory)
-# 2. Fill in real values
-# 3. application-local.yaml is gitignored — never commit it
-# 4. Activate: SPRING_PROFILES_ACTIVE=local
-#              or -Dspring.profiles.active=local in IDE
+# 2. Fill in real values (generate RSA keys — see instructions below)
+# 3. application-local.yaml is gitignored — NEVER commit it
+# 4. Activate: -Dspring.profiles.active=local
+# ============================================================
+#
+# RSA Key Generation (run once):
+#   openssl genrsa -out private.pem 2048
+#   openssl pkcs8 -topk8 -nocrypt -in private.pem -out private_pkcs8.pem
+#   openssl rsa -in private.pem -pubout -out public.pem
+# Then paste the contents of private_pkcs8.pem and public.pem below.
+#
+# Token Encryption Key Generation (run once):
+#   openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
 # ============================================================
 
 spring:
   datasource:
-    url: jdbc:postgresql://<host>/<dbname>?sslmode=require
-    username: <username>
-    password: <password>
-
+    url: jdbc:postgresql://localhost:5432/jobtracker
+    username: jobtracker
+    password: jobtracker_local
   data:
     redis:
-      url: rediss://<host>:<port>
-
-  # Mail is optional. Only include if mail features are needed locally.
-  # mail:
-  #   host: localhost
-  #   port: 1025
-  #   username: ""
-  #   password: ""
-  #   properties:
-  #     mail:
-  #       smtp:
-  #         auth: false
-  #         starttls:
-  #           enable: false
+      url: redis://localhost:6379
+  mail:
+    host: localhost
+    port: 1025
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+app:
+  auth:
+    frontend-base-url: http://localhost:4200
+    rate-limit:
+      login-window-seconds: 60
+      password-reset-window-seconds: 60
+  jwt:
+    expiry-seconds: 900
+    # Required: PKCS#8 RSA private key in PEM format (see generation instructions above)
+    private-key: |-
+      -----BEGIN PRIVATE KEY-----
+      <paste-pkcs8-private-key-pem-content-here>
+      -----END PRIVATE KEY-----
+    # Required: X.509 RSA public key in PEM format (see generation instructions above)
+    public-key: |-
+      -----BEGIN PUBLIC KEY-----
+      <paste-x509-public-key-pem-content-here>
+      -----END PUBLIC KEY-----
+    key-id: local-1
+  cookie:
+    secure: false
+    same-site: STRICT
+    path: /api/v1/auth
+    max-age-seconds: 604800
+  token-encryption:
+    # 256-bit (32-byte) base64url-encoded key (see generation instructions above)
+    key: <paste-base64url-32-byte-key-here>

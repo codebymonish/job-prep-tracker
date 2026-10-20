@@ -77,4 +77,43 @@ class SafeLogRedactorTest {
         assertThat(reply).isEqualTo(FilterReply.NEUTRAL);
         verifyNoInteractions(logger);
     }
+
+    @Test
+    void shouldReturnNeutralWhenNotStarted() {
+        SafeLogRedactor unstarted = new SafeLogRedactor();
+        FilterReply reply = unstarted.decide(null, logger, Level.INFO, "test@example.com", null, null);
+        assertThat(reply).isEqualTo(FilterReply.NEUTRAL);
+    }
+
+    @Test
+    void shouldReturnNeutralWhenAlreadyRedactedMarker() {
+        Marker redactedMarker = org.slf4j.MarkerFactory.getMarker("REDACTED");
+        FilterReply reply = redactor.decide(redactedMarker, logger, Level.INFO, "test@example.com", null, null);
+        assertThat(reply).isEqualTo(FilterReply.NEUTRAL);
+    }
+
+    @Test
+    void shouldRedactParamsArray() {
+        String format = "User details: {}, id={}";
+        Object[] params = new Object[]{"user@example.com", 123};
+        FilterReply reply = redactor.decide(null, logger, Level.INFO, format, params, null);
+
+        assertThat(reply).isEqualTo(FilterReply.DENY);
+        ArgumentCaptor<Object[]> paramsCaptor = ArgumentCaptor.forClass(Object[].class);
+        verify(logger).info(any(Marker.class), eq(format), paramsCaptor.capture());
+        Object[] captured = paramsCaptor.getValue();
+        assertThat(captured[0]).isEqualTo("[EMAIL_REDACTED]");
+        assertThat(captured[1]).isEqualTo(123);
+    }
+
+    @Test
+    void shouldRedactTraceAndErrorLevels() {
+        FilterReply replyTrace = redactor.decide(null, logger, Level.TRACE, "trace user@example.com", null, null);
+        assertThat(replyTrace).isEqualTo(FilterReply.DENY);
+        verify(logger).trace(any(Marker.class), eq("trace [EMAIL_REDACTED]"), (Object[]) eq(null));
+
+        FilterReply replyError = redactor.decide(null, logger, Level.ERROR, "error user@example.com", null, null);
+        assertThat(replyError).isEqualTo(FilterReply.DENY);
+        verify(logger).error(any(Marker.class), eq("error [EMAIL_REDACTED]"), (Object[]) eq(null));
+    }
 }
