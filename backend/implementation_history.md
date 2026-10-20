@@ -590,3 +590,28 @@ It was a Surefire test with `@SpringBootTest` that failed because no DataSource 
 - **Spring Boot 4.1.1 eagerly parses `spring.data.redis.url`.** The `@SpringBootTest(properties = "spring.data.redis.url=")` override is not a hack — it is the required pattern for any integration test that uses a Testcontainers Redis `@ServiceConnection` with this Spring Boot version.
 - **`.mvn/maven.config` uses two-line syntax.** Confirmed working. Single-line fails silently with a path error.
 - **The company mirror (`dockerhubdev.trinitymobility.com`) intercepts `mirrorOf=*`.** Any agent that removes `.mvn/maven.config` will break the build immediately.
+
+---
+
+## 9. Phase G — E2E Testing Foundation
+
+Executed by Antigravity IDE (Gemini) on 2026-09-23.
+
+### What Was Done:
+1. **Maven Quality Enforcement:**
+   - Added JaCoCo `check` execution to `backend/pom.xml` to enforce 80% bundle and 90% package instruction coverage limits.
+2. **Local Environment Configuration:**
+   - Added `application-local.yaml.example` with generated RSA keys (PKCS#8 for private, X.509 for public) and a 32-byte base64url symmetric key.
+   - Updated local cookie policy to `same-site: STRICT` and `path: /api/v1/auth`.
+3. **E2E Test Environment Isolation:**
+   - Created `docker-compose.e2e.yml` at the project root to spin up PostgreSQL (`job-tracker-e2e-postgres`), Redis (`job-tracker-e2e-redis`), and Mailpit (`job-tracker-e2e-mailpit`).
+   - The Postgres container maps its data to `postgres-e2e-data` to prevent accidental deletion of the local development database when running `docker compose down -v`.
+   - **Crucial Note:** The normal local Docker stack must be **stopped** while the E2E stack is running to avoid port collisions (5432, 6379, 8025, 1025).
+4. **Cypress E2E Testing Setup:**
+   - Configured Cypress v15.21.1 and Cypress-Axe in `frontend/package.json`.
+   - Configured `frontend/cypress.config.ts`, `frontend/cypress/support/e2e.ts`, and `frontend/cypress/support/commands.ts`.
+   - Implemented G-1 Spec: `auth-register-verify-login.cy.ts` which runs the complete authentication cycle using a dynamically generated unique email (`crypto.randomUUID()`) to safely support Cypress retries without Mailpit collision.
+   - Implemented G-7 Spec: `auth-concurrent-refresh.cy.ts` which tests the single-flight token refresh logic handling simultaneous 401 Unauthorized API responses. It safely counts intercepts using reverse-order declarations and `Cypress.Promise` closures.
+5. **Frontend Changes:**
+   - Added an Angular E2E test harness component (`auth-test-harness.component.ts`) that triggers simultaneous mock API requests.
+   - Guarded the `/e2e/auth-test-harness` route behind the `!environment.production` flag in `app.routes.ts`.

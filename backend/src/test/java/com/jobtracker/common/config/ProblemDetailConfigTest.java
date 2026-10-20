@@ -69,4 +69,56 @@ class ProblemDetailConfigTest {
         assertThat(pd.getProperties()).isNotNull();
         assertThat(pd.getProperties()).containsEntry("correlationId", "test-corr-id-123");
     }
+
+    @Test
+    void testApplicationNotFoundException() {
+        com.jobtracker.application.exception.ApplicationNotFoundException ex =
+                new com.jobtracker.application.exception.ApplicationNotFoundException("Not found");
+        ProblemDetail pd = config.handleApplicationNotFoundException(ex);
+
+        assertThat(pd.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(pd.getType().toString()).isEqualTo("https://api.jobtracker.app/errors/not-found");
+        assertThat(pd.getTitle()).isEqualTo("Not Found");
+        assertThat(pd.getProperties()).containsEntry("correlationId", "test-corr-id-123");
+    }
+
+    @Test
+    void testInvalidStatusTransitionException() {
+        com.jobtracker.application.exception.InvalidStatusTransitionException ex =
+                new com.jobtracker.application.exception.InvalidStatusTransitionException(
+                        com.jobtracker.application.entity.ApplicationStatus.APPLIED,
+                        com.jobtracker.application.entity.ApplicationStatus.OFFER);
+        ProblemDetail pd = config.handleInvalidStatusTransitionException(ex);
+
+        assertThat(pd.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(pd.getType().toString()).isEqualTo("https://api.jobtracker.app/errors/invalid-status-transition");
+        assertThat(pd.getTitle()).isEqualTo("Invalid Status Transition");
+        assertThat(pd.getProperties()).containsEntry("correlationId", "test-corr-id-123");
+        assertThat(pd.getProperties()).containsEntry("from", com.jobtracker.application.entity.ApplicationStatus.APPLIED);
+        assertThat(pd.getProperties()).containsEntry("to", com.jobtracker.application.entity.ApplicationStatus.OFFER);
+    }
+
+    @Test
+    void testStaleApplicationException() {
+        com.jobtracker.application.exception.StaleApplicationException ex =
+                new com.jobtracker.application.exception.StaleApplicationException("Stale update");
+        ProblemDetail pd = config.handleStaleApplicationException(ex);
+
+        assertThat(pd.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(pd.getType().toString()).isEqualTo("https://api.jobtracker.app/errors/stale-update");
+        assertThat(pd.getTitle()).isEqualTo("Stale Update");
+        assertThat(pd.getProperties()).containsEntry("correlationId", "test-corr-id-123");
+    }
+
+    @Test
+    void testObjectOptimisticLockingFailureException() {
+        org.springframework.orm.ObjectOptimisticLockingFailureException ex =
+                new org.springframework.orm.ObjectOptimisticLockingFailureException("Application", new Object());
+        ProblemDetail pd = config.handleObjectOptimisticLockingFailureException(ex);
+
+        assertThat(pd.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(pd.getType().toString()).isEqualTo("https://api.jobtracker.app/errors/stale-update");
+        assertThat(pd.getTitle()).isEqualTo("Stale Update");
+        assertThat(pd.getProperties()).containsEntry("correlationId", "test-corr-id-123");
+    }
 }

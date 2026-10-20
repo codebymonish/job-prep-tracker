@@ -87,6 +87,15 @@ class SecurityConfigIT {
     }
 
     @Test
+    void corsPreflightPatchFromAllowedOrigin_shouldReturn200AndHeaders() throws Exception {
+        mockMvc.perform(options("/api/v1/applications/test-endpoint")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:4200")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "PATCH"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:4200"));
+    }
+
+    @Test
     void corsPreflightFromDisallowedOrigin_shouldNotHaveCorsHeaders() throws Exception {
         mockMvc.perform(options("/api/v1/auth/public-test-endpoint")
                         .header(HttpHeaders.ORIGIN, "http://malicious.com")

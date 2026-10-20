@@ -108,7 +108,7 @@ class PendingDeletionGateIT {
     }
 
     @Test
-    void activeUser_accessingApplications_shouldPassFilterAndReturn404() throws Exception {
+    void activeUser_accessingApplications_shouldPassFilterAndReturn200() throws Exception {
         User user = new User();
         user.setEmail("active@example.com");
         user.setEmailNormalized("ACTIVE@EXAMPLE.COM");
@@ -121,6 +121,6 @@ class PendingDeletionGateIT {
 
         mockMvc.perform(get("/api/v1/applications")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isNotFound()); 
+                .andExpect(status().isOk()); 
     }
 }

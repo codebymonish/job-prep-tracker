@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import org.slf4j.MDC;
 
@@ -69,6 +70,46 @@ public class ProblemDetailConfig {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problemDetail.setType(URI.create(errorBaseUrl + "/email-exists"));
         problemDetail.setTitle("Duplicate Email");
+        problemDetail.setProperty("correlationId", MDC.get("correlationId"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(com.jobtracker.application.exception.ApplicationNotFoundException.class)
+    public ProblemDetail handleApplicationNotFoundException(com.jobtracker.application.exception.ApplicationNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setType(URI.create(errorBaseUrl + "/not-found"));
+        problemDetail.setTitle("Not Found");
+        problemDetail.setProperty("correlationId", MDC.get("correlationId"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(com.jobtracker.application.exception.InvalidStatusTransitionException.class)
+    public ProblemDetail handleInvalidStatusTransitionException(com.jobtracker.application.exception.InvalidStatusTransitionException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setType(URI.create(errorBaseUrl + "/invalid-status-transition"));
+        problemDetail.setTitle("Invalid Status Transition");
+        problemDetail.setProperty("correlationId", MDC.get("correlationId"));
+        problemDetail.setProperty("from", ex.getFrom());
+        problemDetail.setProperty("to", ex.getTo());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(com.jobtracker.application.exception.StaleApplicationException.class)
+    public ProblemDetail handleStaleApplicationException(com.jobtracker.application.exception.StaleApplicationException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setType(URI.create(errorBaseUrl + "/stale-update"));
+        problemDetail.setTitle("Stale Update");
+        problemDetail.setProperty("correlationId", MDC.get("correlationId"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleObjectOptimisticLockingFailureException(ObjectOptimisticLockingFailureException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                "Application was updated by another request. Please refresh and try again.");
+        problemDetail.setType(URI.create(errorBaseUrl + "/stale-update"));
+        problemDetail.setTitle("Stale Update");
         problemDetail.setProperty("correlationId", MDC.get("correlationId"));
         return problemDetail;
     }
